@@ -16,7 +16,7 @@ func main() {
 
 	if user, err := getUser(db); err != nil {
 		if errors2.Is(err, sql.ErrNoRows) {
-			fmt.Printf("查询不到用户 %+v", err)
+			fmt.Printf("查询不到用户\n%+v", err)
 		} else {
 			fmt.Println(err)
 			panic(err)
