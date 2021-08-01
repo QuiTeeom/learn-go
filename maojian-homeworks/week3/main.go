@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"learn-go/maojian-homeworks/week3/internal/server"
 	"os"
 	"os/signal"
@@ -9,28 +11,33 @@ import (
 )
 
 func main() {
-	s := server.NewServer(&server.Config{Port: 8080})
 
-	errSig := make(chan error)
+	c, cf := context.WithCancel(context.Background())
+	eg, ctx := errgroup.WithContext(c)
 
-	go func() {
-		err := s.Start()
-		if err != nil {
-			errSig <- err
-		}
-	}()
+	s1 := server.NewServer(&server.Config{Id: "1", Port: 8080, Context: ctx})
+	s2 := server.NewServer(&server.Config{Id: "2", Port: 8083, Context: ctx})
 
-	osSig := make(chan os.Signal)
-	signal.Notify(osSig, syscall.SIGKILL, syscall.SIGINT)
+	servers := []server.Server{s1, s2}
 
-	for {
+	for _, s := range servers {
+		eg.Go(s.Start)
+	}
+
+	eg.Go(func() error {
+		osSig := make(chan os.Signal)
+		signal.Notify(osSig, syscall.SIGKILL, syscall.SIGINT)
 		select {
-		case err := <-errSig:
-			panic(err)
 		case sig := <-osSig:
 			fmt.Printf("\nreceive signal:%s\n", sig)
-			s.Stop()
-			os.Exit(0)
+			cf()
+		case <-ctx.Done():
 		}
+		return nil
+	})
+
+	err := eg.Wait()
+	if err != nil {
+		panic(err)
 	}
 }

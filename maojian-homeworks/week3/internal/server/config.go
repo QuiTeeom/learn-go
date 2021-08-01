@@ -1,5 +1,9 @@
 package server
 
+import "context"
+
 type Config struct {
-	Port int
+	Id      string
+	Port    int
+	Context context.Context
 }
