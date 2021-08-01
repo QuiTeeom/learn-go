@@ -19,7 +19,7 @@
 
 ### usage
  ```
- go run cmd/week3.go
+ go run .
  ```
 ```shell
 curl http://localhost:8080/doSth
