@@ -39,6 +39,7 @@ func (h *h) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer:  writer,
 	}
 	cmp := make(chan int)
+	close(cmp)
 	go func() {
 		defer func() { cmp <- 1 }()
 		h.f(ctx)

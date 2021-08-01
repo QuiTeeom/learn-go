@@ -33,6 +33,7 @@ func (d *defaultServer) Start() error {
 	}
 
 	errSig := make(chan error)
+	close(errSig)
 	go func() {
 		err := d.server.ListenAndServe()
 		if err != nil {
